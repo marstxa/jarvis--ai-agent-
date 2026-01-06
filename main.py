@@ -1,6 +1,8 @@
 import os
 from dotenv import load_dotenv
 from google import genai
+from google.genai import types
+import argparse
 
 def main():
     load_dotenv()
@@ -11,8 +13,16 @@ def main():
 
     client = genai.Client(api_key=api_key)
 
+    #Get user input
+    user_input = argparse.ArgumentParser(description="Chatbot Jarvis")
+    user_input.add_argument("user_prompt", type=str, help="User Prompt")
+    user_args = user_input.parse_args() # To access args.user_prompt and write our prompt to the terminal
+
+    # History of prompts
+    message_history = [types.Content(role="user", parts=[types.Part(text=user_args.user_prompt)])]
+    
     # Generate response from agent
-    response = client.models.generate_content(model="gemini-2.5-flash", contents="Why is Boot.dev such a great place to learn backend development? Use one paragraph maximum.")
+    response = client.models.generate_content(model="gemini-2.5-flash", contents=message_history)
 
     #Tokens 
     if response.usage_metadata is not None:
