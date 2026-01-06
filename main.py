@@ -16,23 +16,26 @@ def main():
     #Get user input
     user_input = argparse.ArgumentParser(description="Chatbot Jarvis")
     user_input.add_argument("user_prompt", type=str, help="User Prompt")
+    user_input.add_argument("--verbose", action="store_true", help="Enable verbose output") # Verbose flag for briefer less noise outputs
     user_args = user_input.parse_args() # To access args.user_prompt and write our prompt to the terminal
 
     # History of prompts
     message_history = [types.Content(role="user", parts=[types.Part(text=user_args.user_prompt)])]
-    
+
     # Generate response from agent
     response = client.models.generate_content(model="gemini-2.5-flash", contents=message_history)
 
-    #Tokens 
-    if response.usage_metadata is not None:
-        print(f"Prompt tokens: {response.usage_metadata.prompt_token_count}")
-        print(f"Response tokens: {response.usage_metadata.candidates_token_count}")
+    if user_args.verbose is True: #Check if verbose flag is true
+        print(f"User prompt: {user_args.user_prompt}")
+
+        #Tokens
+        if response.usage_metadata is not None:
+            print(f"Prompt tokens: {response.usage_metadata.prompt_token_count}")
+            print(f"Response tokens: {response.usage_metadata.candidates_token_count}")
+        else:
+            raise RuntimeError("Failed API request")
     else:
-        raise RuntimeError("Failed API request")
-
-
-    print(f"Response:\n{response.text}") # Display response to terminal
+        print(f"Response:\n{response.text}") # Display response to terminal
 
 if __name__ == "__main__":
     main()
