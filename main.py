@@ -3,6 +3,8 @@ from dotenv import load_dotenv
 from google import genai
 from google.genai import types
 import argparse
+from prompts import system_prompt
+from functions.call_function import available_functions
 
 def main():
     load_dotenv()
@@ -23,7 +25,20 @@ def main():
     message_history = [types.Content(role="user", parts=[types.Part(text=user_args.user_prompt)])]
 
     # Generate response from agent
-    response = client.models.generate_content(model="gemini-2.5-flash", contents=message_history)
+    response = client.models.generate_content(
+        model="gemini-2.5-flash",
+        contents=message_history,
+        config=types.GenerateContentConfig(
+            tools=[available_functions],
+            system_instruction=system_prompt
+            ),     
+    )
+
+    # Check for function calls
+
+    if not response.function_calls is None:
+        for function_call in response.function_calls:
+            print(f"Calling function: {function_call.name}({function_call.args})")
 
     if user_args.verbose is True: #Check if verbose flag is true
         print(f"User prompt: {user_args.user_prompt}")
